@@ -6,3 +6,5 @@ node_modules/
 dist/
 web-build/
 npm-debug.log*
+
+.railway-token
