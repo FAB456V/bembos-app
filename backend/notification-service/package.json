@@ -1,0 +1,16 @@
+{
+  "name": "bembos-notification-service",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "check": "node --check index.js && node --check models/Notification.js && node --check controllers/notificationController.js && node --check routes/notificationRoutes.js && node --check middlewares/verifyServiceKey.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "expo-server-sdk": "^3.15.0",
+    "mongoose": "^8.15.1"
+  }
+}

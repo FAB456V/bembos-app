@@ -1,0 +1,35 @@
+# Create five Railway services from this repository and set each Root Directory.
+# Railway provides PORT automatically. Do not hardcode PORT in Railway.
+
+# auth-service (Root Directory: backend/auth-service)
+MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bembos_auth
+JWT_SECRET=replace-with-the-same-long-random-jwt-secret
+JWT_EXPIRES_IN=7d
+
+# orders-service (Root Directory: backend/orders-service)
+MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bembos_orders
+JWT_SECRET=replace-with-the-same-long-random-jwt-secret
+SERVICE_API_KEY=replace-with-the-same-long-random-service-key
+
+# notification-service (Root Directory: backend/notification-service)
+MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bembos_notifications
+SERVICE_API_KEY=replace-with-the-same-long-random-service-key
+EXPO_ACCESS_TOKEN=
+
+# tracking-service (Root Directory: backend/tracking-service)
+MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bembos_tracking
+JWT_SECRET=replace-with-the-same-long-random-jwt-secret
+SERVICE_API_KEY=replace-with-the-same-long-random-service-key
+ORDERS_SERVICE_URL=https://orders-service-production.up.railway.app
+NOTIFICATION_SERVICE_URL=https://notification-service-production.up.railway.app
+LOCATION_TTL_SECONDS=604800
+
+# api-gateway (Root Directory: backend/api-gateway)
+AUTH_SERVICE_URL=https://auth-service-production.up.railway.app
+ORDERS_SERVICE_URL=https://orders-service-production.up.railway.app
+TRACKING_SERVICE_URL=https://tracking-service-production.up.railway.app
+NOTIFICATION_SERVICE_URL=https://notification-service-production.up.railway.app
+
+# frontend/.env for a deployed backend
+EXPO_PUBLIC_API_URL=https://api-gateway-production.up.railway.app
+EXPO_PUBLIC_TRACKING_URL=https://api-gateway-production.up.railway.app

@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Bembos App",
+    "slug": "bembos-app",
+    "version": "1.0.0",
+    "scheme": "bembos",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.bembos.optimizationapp"
+    },
+    "ios": {
+      "bundleIdentifier": "com.bembos.optimizationapp"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
