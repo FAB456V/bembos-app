@@ -18,7 +18,6 @@ export function useSocket(orderId) {
 
     const socket = io(TRACKING_URL, {
       auth: { token },
-      transports: ['websocket'],
     });
 
     socket.on('connect', () => {

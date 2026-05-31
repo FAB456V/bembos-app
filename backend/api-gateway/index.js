@@ -16,6 +16,10 @@ function createServer() {
     res.json({ service: 'api-gateway', status: 'ok' });
   });
 
+  app.use('/socket.io', (req, _res, next) => {
+    req.url = '/socket.io' + req.url;
+    next();
+  }, socketProxy);
   app.use('/', createRoutes());
 
   app.use((_req, res) => {
