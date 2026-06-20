@@ -34,6 +34,7 @@ function createRoutes() {
   const ordersServiceUrl = requireEnv('ORDERS_SERVICE_URL');
   const trackingServiceUrl = requireEnv('TRACKING_SERVICE_URL');
 
+  router.use('/iot', createHttpProxy(ordersServiceUrl, (path) => '/iot' + path));
   router.use('/auth', createHttpProxy(authServiceUrl, { '^/auth': '' }));
   router.use('/orders', createHttpProxy(ordersServiceUrl, (path) => `/orders${path}`));
   router.use('/tracking', createHttpProxy(trackingServiceUrl, (path) => `/tracking${path}`));

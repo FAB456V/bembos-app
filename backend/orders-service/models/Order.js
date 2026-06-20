@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 const ORDER_STATUSES = ['En preparacion', 'En camino', 'Entregado'];
@@ -26,6 +27,14 @@ const orderSchema = new mongoose.Schema(
     estado: { type: String, enum: ORDER_STATUSES, default: 'En preparacion' },
     total: { type: Number, required: true, min: 0 },
     direccionEntrega: { type: String, required: true, trim: true },
+    qrToken: {
+      type: String,
+      default: () => crypto.randomBytes(24).toString('hex'),
+      immutable: true,
+      select: false,
+      sparse: true,
+      unique: true,
+    },
     deliveryId: { type: String, trim: true },
     tiempoEstimado: { type: Number, min: 0 },
   },

@@ -48,13 +48,13 @@ cd backend
 cp .env.example .env
 ```
 
-Edita `backend/.env` y reemplaza las cuatro URI de Atlas. Genera secretos distintos con:
+Edita `backend/.env` y reemplaza las cuatro URI de Atlas. Genera tres secretos distintos con:
 
 ```bash
 openssl rand -hex 32
 ```
 
-Usa un resultado para `JWT_SECRET` y otro para `SERVICE_API_KEY`.
+Usa un resultado para `JWT_SECRET`, otro para `SERVICE_API_KEY` y otro para `IOT_DEVICE_API_KEY`.
 
 Levanta los cinco servicios:
 
@@ -73,6 +73,19 @@ Respuesta esperada:
 ```json
 {"service":"api-gateway","status":"ok"}
 ```
+
+### API IoT para leer el QR
+
+El ESP32 consultara el pedido mediante el gateway. La solicitud requiere la clave exclusiva del dispositivo:
+
+```bash
+curl -X POST http://localhost:3000/iot/orders/scan \
+  -H "Content-Type: application/json" \
+  -H "X-Device-Key: VALOR_DE_IOT_DEVICE_API_KEY" \
+  -d '{"qrPayload":"BEMBOS_ORDER:TOKEN_DE_48_CARACTERES"}'
+```
+
+La respuesta incluye el numero, estado, productos, total y direccion. No expone el usuario, el token QR ni los precios unitarios. Un QR invalido devuelve `400`, una clave incorrecta `401` y un pedido inexistente `404`.
 
 ## 3. Ejecutar el frontend
 

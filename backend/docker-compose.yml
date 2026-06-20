@@ -40,6 +40,7 @@ services:
       MONGODB_URI: ${ORDERS_MONGODB_URI}
       JWT_SECRET: ${JWT_SECRET}
       SERVICE_API_KEY: ${SERVICE_API_KEY}
+      IOT_DEVICE_API_KEY: ${IOT_DEVICE_API_KEY}
     networks:
       - bembos-network
     restart: unless-stopped

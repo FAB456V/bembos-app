@@ -6,6 +6,18 @@ function isValidId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
+function buildQrPayload(qrToken) {
+  return 'BEMBOS_ORDER:' + qrToken;
+}
+
+function orderResponse(order) {
+  const data = order.toObject();
+  const qrToken = data.qrToken;
+  delete data.qrToken;
+
+  return { ...data, qrPayload: buildQrPayload(qrToken) };
+}
+
 async function createOrder(req, res, next) {
   try {
     const { productos, direccionEntrega, deliveryId, tiempoEstimado } = req.body || {};
@@ -44,7 +56,8 @@ async function createOrder(req, res, next) {
       tiempoEstimado,
     });
 
-    return res.status(201).json({ order });
+    const orderWithQr = await Order.findById(order._id).select('+qrToken');
+    return res.status(201).json({ order: orderResponse(orderWithQr) });
   } catch (error) {
     return next(error);
   }
@@ -56,7 +69,7 @@ async function getOrder(req, res, next) {
       return res.status(400).json({ message: 'Id de pedido invalido' });
     }
 
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).select('+qrToken');
 
     if (!order) {
       return res.status(404).json({ message: 'Pedido no encontrado' });
@@ -66,7 +79,7 @@ async function getOrder(req, res, next) {
       return res.status(403).json({ message: 'No autorizado para ver este pedido' });
     }
 
-    return res.json({ order });
+    return res.json({ order: orderResponse(order) });
   } catch (error) {
     return next(error);
   }
