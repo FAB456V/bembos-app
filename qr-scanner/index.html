@@ -3,97 +3,231 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Bembos - Escáner QR</title>
+  <title>Bembos - Kiosco QR</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root { color-scheme: light; font-family: Arial, sans-serif; }
-    body { background:#f5f5f5; margin:0; color:#1a1a1a; }
-    main { margin:auto; max-width:620px; padding:28px 16px; }
-    h1 { color:#e30613; margin-bottom:4px; }
-    .card { background:white; border-radius:16px; box-shadow:0 3px 14px #0002; padding:18px; }
-    label { display:block; font-size:12px; font-weight:800; margin:12px 0 5px; }
-    input { border:1px solid #bbb; border-radius:8px; box-sizing:border-box; padding:11px; width:100%; }
-    #reader { margin-top:18px; }
-    #status { border-radius:9px; font-weight:700; margin-top:15px; padding:12px; }
+    :root { color-scheme:light; font-family:Inter,Arial,sans-serif; }
+    * { box-sizing:border-box; }
+    body { background:#f3f4f6; color:#1a1a1a; margin:0; }
+    header { background:#1300d0; color:#fff; padding:20px max(18px,calc((100vw - 1180px)/2)); }
+    header strong { color:#ffc20e; font-size:24px; letter-spacing:2px; }
+    header span { display:block; margin-top:4px; opacity:.85; }
+    main { margin:auto; max-width:1180px; padding:22px 16px 40px; }
+    .grid { display:grid; gap:18px; grid-template-columns:minmax(320px,430px) 1fr; }
+    .card { background:#fff; border-radius:16px; box-shadow:0 3px 14px #00000012; padding:18px; }
+    h2,h3 { margin:0 0 12px; }
+    label { display:block; font-size:11px; font-weight:900; letter-spacing:.5px; margin:12px 0 5px; }
+    input { border:1px solid #bbb; border-radius:8px; padding:11px; width:100%; }
+    #reader { margin-top:16px; overflow:hidden; }
+    #status { border-radius:9px; font-weight:700; line-height:1.45; margin-top:14px; padding:12px; }
     .idle { background:#eee; } .ok { background:#ddf6e5; color:#287a43; } .error { background:#fde8e9; color:#b00020; }
+    button { background:#1300d0; border:0; border-radius:10px; color:#fff; cursor:pointer; font-size:15px; font-weight:900; margin-top:12px; padding:13px; width:100%; }
+    button[hidden] { display:none; }
+    .metrics { display:grid; gap:10px; grid-template-columns:repeat(3,1fr); margin-bottom:16px; }
+    .metric { background:#f7f7f8; border-radius:12px; padding:12px; text-align:center; }
+    .metric b { color:#1300d0; display:block; font-size:24px; }
+    .columns { display:grid; gap:14px; grid-template-columns:1fr 1fr; }
+    .column { background:#f7f7f8; border-radius:12px; min-height:230px; padding:12px; }
+    .order { background:#fff; border-left:5px solid #ffc20e; border-radius:9px; margin-bottom:9px; padding:11px; }
+    .order.delivered { border-left-color:#2a9d5b; }
+    .order-head { align-items:center; display:flex; justify-content:space-between; }
+    .badge { background:#fff2c2; border-radius:20px; font-size:10px; font-weight:900; padding:5px 8px; }
+    .delivered .badge { background:#ddf6e5; color:#287a43; }
+    .detail { color:#666; font-size:12px; margin-top:6px; }
+    .empty { color:#888; font-size:13px; padding:18px 4px; text-align:center; }
+    #delivery { border:2px solid #2a9d5b; display:none; margin-top:18px; }
+    #delivery.visible { display:block; }
+    .delivery-title { color:#287a43; }
+    .products { margin:8px 0; padding-left:20px; }
     code { word-break:break-all; }
+    @media(max-width:850px){ .grid,.columns { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
+<header><strong>BEMBOS</strong><span>Kiosco de recojo y despacho</span></header>
 <main>
-  <h1>BEMBOS</h1>
-  <p>Escáner del kiosco de recojo</p>
-  <section class="card">
-    <label for="apiUrl">API Gateway</label>
-    <input id="apiUrl" value="https://triumphant-benevolence-production-124d.up.railway.app">
-    <label for="deviceKey">IOT_DEVICE_API_KEY</label>
-    <input id="deviceKey" type="password" placeholder="Pega la misma clave usada en secrets.h">
-    <div id="reader"></div>
-    <div id="status" class="idle">Esperando un QR...</div>
+  <div class="grid">
+    <section class="card">
+      <h2>Leer pedido</h2>
+      <label for="apiUrl">API GATEWAY</label>
+      <input id="apiUrl" value="https://triumphant-benevolence-production-124d.up.railway.app">
+      <label for="deviceKey">IOT_DEVICE_API_KEY</label>
+      <input id="deviceKey" type="password" placeholder="La misma clave de secrets.h">
+      <div id="reader"></div>
+      <div id="status" class="idle">Configura la clave y escanea un QR.</div>
+      <button id="readAnother" hidden>Leer otro QR</button>
+    </section>
+
+    <section class="card">
+      <h2>Dashboard de pedidos</h2>
+      <div class="metrics">
+        <div class="metric"><b id="pendingCount">0</b>Pendientes</div>
+        <div class="metric"><b id="deliveredCount">0</b>Entregados</div>
+        <div class="metric"><b id="totalCount">0</b>Total</div>
+      </div>
+      <div class="columns">
+        <div class="column"><h3>Pendientes de entrega</h3><div id="pendingOrders" class="empty">Ingresa la clave para cargar.</div></div>
+        <div class="column"><h3>Pedidos entregados</h3><div id="deliveredOrders" class="empty">Ingresa la clave para cargar.</div></div>
+      </div>
+    </section>
+  </div>
+
+  <section id="delivery" class="card">
+    <h2 class="delivery-title">Pedido entregado</h2>
+    <div id="deliveryDetail"></div>
   </section>
 </main>
 <script>
+  const apiInput = document.getElementById('apiUrl');
+  const keyInput = document.getElementById('deviceKey');
   const statusBox = document.getElementById('status');
-  let lastPayload = '';
-  let lastSentAt = 0;
+  const readAnotherButton = document.getElementById('readAnother');
+  let scanner = null;
+  let scanLocked = false;
+  let currentOrderId = null;
+  let lastDeliveredId = null;
 
-  function setStatus(message, type) {
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+  }[char]));
+
+  function credentials() {
+    return {
+      apiUrl: apiInput.value.replace(/\/$/, ''),
+      deviceKey: keyInput.value.trim(),
+    };
+  }
+
+  function setStatus(message, type='idle') {
     statusBox.className = type;
     statusBox.innerHTML = message;
   }
 
-  async function sendQr(decodedText) {
-    const qrPayload = decodedText.trim();
-    const now = Date.now();
+  function startScanner() {
+    scanLocked = false;
+    document.getElementById('reader').innerHTML = '';
+    scanner = new Html5QrcodeScanner('reader', {
+      fps:10,
+      qrbox:{ width:250, height:250 },
+      rememberLastUsedCamera:true,
+      supportedScanTypes:[
+        Html5QrcodeScanType.SCAN_TYPE_CAMERA,
+        Html5QrcodeScanType.SCAN_TYPE_FILE,
+      ],
+    }, false);
+    scanner.render(onQrRead, () => {});
+  }
 
-    if (!qrPayload.startsWith('BEMBOS_ORDER:')) {
-      setStatus('El QR no pertenece a un pedido Bembos.', 'error');
-      return;
-    }
+  async function stopScanner() {
+    if (!scanner) return;
+    try { await scanner.clear(); } catch (_) {}
+    scanner = null;
+  }
 
-    if (qrPayload === lastPayload && now - lastSentAt < 5000) return;
-    lastPayload = qrPayload;
-    lastSentAt = now;
+  async function onQrRead(decodedText) {
+    if (scanLocked) return;
+    scanLocked = true;
+    await stopScanner();
+    readAnotherButton.hidden = false;
+    await sendQr(decodedText.trim());
+  }
 
-    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
-    const deviceKey = document.getElementById('deviceKey').value.trim();
+  async function sendQr(qrPayload) {
+    const { apiUrl, deviceKey } = credentials();
 
     if (!deviceKey) {
-      setStatus('Primero ingresa IOT_DEVICE_API_KEY.', 'error');
+      setStatus('Ingresa IOT_DEVICE_API_KEY y pulsa “Leer otro QR”.', 'error');
+      return;
+    }
+    if (!qrPayload.startsWith('BEMBOS_ORDER:')) {
+      setStatus('El QR leído no pertenece a un pedido Bembos.', 'error');
       return;
     }
 
-    setStatus('Enviando QR al ESP32...', 'idle');
-
+    setStatus('Pedido detectado. Enviando al ESP32...', 'idle');
     try {
       const response = await fetch(apiUrl + '/iot/scans', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Device-Key': deviceKey,
-        },
-        body: JSON.stringify({ qrPayload }),
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'X-Device-Key':deviceKey },
+        body:JSON.stringify({ qrPayload }),
       });
       const data = await response.json().catch(() => ({}));
-
       if (!response.ok) throw new Error(data.message || 'HTTP ' + response.status);
-      setStatus('QR enviado al kiosco.<br><code>' + qrPayload + '</code>', 'ok');
+
+      currentOrderId = data.order.id;
+      setStatus('Pedido <b>#' + escapeHtml(data.order.numeroPedido) + '</b> enviado. Esperando confirmación de Wokwi...', 'ok');
+      await loadDashboard();
     } catch (error) {
-      setStatus('No se pudo enviar: ' + error.message, 'error');
+      setStatus('No se pudo procesar: ' + escapeHtml(error.message), 'error');
     }
   }
 
-  const scanner = new Html5QrcodeScanner('reader', {
-    fps: 10,
-    qrbox: { width: 250, height: 250 },
-    rememberLastUsedCamera: true,
-    supportedScanTypes: [
-      Html5QrcodeScanType.SCAN_TYPE_CAMERA,
-      Html5QrcodeScanType.SCAN_TYPE_FILE,
-    ],
-  }, false);
+  readAnotherButton.addEventListener('click', async () => {
+    readAnotherButton.hidden = true;
+    currentOrderId = null;
+    setStatus('Esperando un QR...', 'idle');
+    await stopScanner();
+    startScanner();
+  });
 
-  scanner.render(sendQr, () => {});
+  function orderCard(order, delivered=false) {
+    const products = order.productos.map((p) => p.cantidad + ' x ' + p.nombre).join(', ');
+    return '<article class="order ' + (delivered?'delivered':'') + '">' +
+      '<div class="order-head"><b>#' + escapeHtml(order.numeroPedido) + '</b><span class="badge">' + escapeHtml(order.estado) + '</span></div>' +
+      '<div class="detail">' + escapeHtml(products) + '</div>' +
+      '<div class="detail">' + escapeHtml(order.tiendaRecojo) + ' · S/ ' + Number(order.total).toFixed(2) + '</div></article>';
+  }
+
+  function showDelivery(order) {
+    if (lastDeliveredId === order.id) return;
+    lastDeliveredId = order.id;
+    const products = order.productos.map((p) => '<li>' + escapeHtml(p.cantidad + ' x ' + p.nombre) + '</li>').join('');
+    document.getElementById('deliveryDetail').innerHTML =
+      '<b>Pedido #' + escapeHtml(order.numeroPedido) + '</b>' +
+      '<ul class="products">' + products + '</ul>' +
+      '<div>Tienda: ' + escapeHtml(order.tiendaRecojo) + '</div>' +
+      '<div>Total: S/ ' + Number(order.total).toFixed(2) + '</div>' +
+      '<div>Entregado: ' + new Date(order.updatedAt || Date.now()).toLocaleString('es-PE') + '</div>';
+    document.getElementById('delivery').classList.add('visible');
+  }
+
+  async function loadDashboard() {
+    const { apiUrl, deviceKey } = credentials();
+    if (!deviceKey) return;
+
+    try {
+      const response = await fetch(apiUrl + '/iot/dashboard', {
+        headers:{ 'X-Device-Key':deviceKey },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'HTTP ' + response.status);
+
+      document.getElementById('pendingCount').textContent = data.summary.pending;
+      document.getElementById('deliveredCount').textContent = data.summary.delivered;
+      document.getElementById('totalCount').textContent = data.summary.total;
+      document.getElementById('pendingOrders').innerHTML = data.pending.length
+        ? data.pending.map((o) => orderCard(o)).join('')
+        : '<div class="empty">No hay pedidos pendientes.</div>';
+      document.getElementById('deliveredOrders').innerHTML = data.delivered.length
+        ? data.delivered.map((o) => orderCard(o,true)).join('')
+        : '<div class="empty">Todavía no hay entregas.</div>';
+
+      const justDelivered = currentOrderId && data.delivered.find((o) => o.id === currentOrderId);
+      if (justDelivered) {
+        showDelivery(justDelivered);
+        currentOrderId = null;
+        setStatus('Pedido <b>#' + escapeHtml(justDelivered.numeroPedido) + '</b> despachado correctamente.', 'ok');
+      } else if (!lastDeliveredId && data.delivered[0]) {
+        showDelivery(data.delivered[0]);
+      }
+    } catch (error) {
+      document.getElementById('pendingOrders').innerHTML = '<div class="empty">No se pudo cargar el dashboard.</div>';
+    }
+  }
+
+  keyInput.addEventListener('change', loadDashboard);
+  startScanner();
+  setInterval(loadDashboard, 2500);
 </script>
 </body>
 </html>

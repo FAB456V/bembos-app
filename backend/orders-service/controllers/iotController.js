@@ -26,6 +26,7 @@ function toDeviceOrder(order) {
     modalidad: order.modalidad || 'Recojo en tienda',
     tiendaRecojo: order.tiendaRecojo || order.direccionEntrega || 'Tienda no disponible',
     createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
   };
 }
 
