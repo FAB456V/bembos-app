@@ -23,7 +23,8 @@ function toDeviceOrder(order) {
       cantidad,
     })),
     total: order.total,
-    direccionEntrega: order.direccionEntrega,
+    modalidad: order.modalidad || 'Recojo en tienda',
+    tiendaRecojo: order.tiendaRecojo || order.direccionEntrega || 'Tienda no disponible',
     createdAt: order.createdAt,
   };
 }
@@ -42,10 +43,42 @@ async function scanOrder(req, res, next) {
       return res.status(404).json({ message: 'Pedido no encontrado para este QR' });
     }
 
+    if (order.estado === 'Entregado') {
+      return res.status(409).json({ message: 'El pedido ya fue recogido' });
+    }
+
+    if (order.estado !== 'Listo para recoger') {
+      return res.status(425).json({ message: 'El pedido aun no esta listo para recoger' });
+    }
+
     return res.json({ order: toDeviceOrder(order) });
   } catch (error) {
     return next(error);
   }
 }
 
-module.exports = { parseQrPayload, scanOrder, toDeviceOrder };
+async function confirmPickup(req, res, next) {
+  try {
+    const order = await Order.findOneAndUpdate(
+      { _id: req.params.id, estado: 'Listo para recoger' },
+      { estado: 'Entregado' },
+      { new: true, runValidators: true }
+    );
+
+    if (order) {
+      return res.json({ message: 'Recojo confirmado', order: toDeviceOrder(order) });
+    }
+
+    const existingOrder = await Order.findById(req.params.id);
+    if (!existingOrder) return res.status(404).json({ message: 'Pedido no encontrado' });
+    if (existingOrder.estado === 'Entregado') {
+      return res.status(409).json({ message: 'El pedido ya fue recogido' });
+    }
+    return res.status(425).json({ message: 'El pedido aun no esta listo para recoger' });
+  } catch (error) {
+    if (error.name === 'CastError') return res.status(400).json({ message: 'Id de pedido invalido' });
+    return next(error);
+  }
+}
+
+module.exports = { confirmPickup, parseQrPayload, scanOrder, toDeviceOrder };

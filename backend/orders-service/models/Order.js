@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 
-const ORDER_STATUSES = ['En preparacion', 'En camino', 'Entregado'];
+const ORDER_STATUSES = ['En preparacion', 'Listo para recoger', 'Entregado'];
+const STORED_ORDER_STATUSES = [...ORDER_STATUSES, 'En camino'];
 
 const productSchema = new mongoose.Schema(
   {
@@ -24,9 +25,11 @@ const orderSchema = new mongoose.Schema(
         message: 'El pedido debe incluir al menos un producto',
       },
     },
-    estado: { type: String, enum: ORDER_STATUSES, default: 'En preparacion' },
+    modalidad: { type: String, default: 'Recojo en tienda', trim: true },
+    tiendaRecojo: { type: String, trim: true },
+    estado: { type: String, enum: STORED_ORDER_STATUSES, default: 'En preparacion' },
     total: { type: Number, required: true, min: 0 },
-    direccionEntrega: { type: String, required: true, trim: true },
+    direccionEntrega: { type: String, trim: true },
     qrToken: {
       type: String,
       default: () => crypto.randomBytes(24).toString('hex'),

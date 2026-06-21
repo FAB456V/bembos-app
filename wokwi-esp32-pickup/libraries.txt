@@ -1,0 +1,4 @@
+ArduinoJson
+MFRC522
+LiquidCrystal I2C
+ESP32Servo

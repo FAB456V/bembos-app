@@ -20,11 +20,11 @@ function orderResponse(order) {
 
 async function createOrder(req, res, next) {
   try {
-    const { productos, direccionEntrega, deliveryId, tiempoEstimado } = req.body || {};
+    const { productos, tiendaRecojo } = req.body || {};
 
-    if (!Array.isArray(productos) || productos.length === 0 || !direccionEntrega) {
+    if (!Array.isArray(productos) || productos.length === 0 || !tiendaRecojo?.trim()) {
       return res.status(400).json({
-        message: 'productos y direccionEntrega son obligatorios',
+        message: 'productos y tiendaRecojo son obligatorios',
       });
     }
 
@@ -50,10 +50,9 @@ async function createOrder(req, res, next) {
     const order = await Order.create({
       userId: req.auth.userId,
       productos,
+      modalidad: 'Recojo en tienda',
+      tiendaRecojo: tiendaRecojo.trim(),
       total,
-      direccionEntrega,
-      deliveryId,
-      tiempoEstimado,
     });
 
     const orderWithQr = await Order.findById(order._id).select('+qrToken');

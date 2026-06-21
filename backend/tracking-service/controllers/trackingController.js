@@ -1,7 +1,7 @@
 const axios = require('axios');
 const Location = require('../models/Location');
 
-const ORDER_STATUSES = ['En preparacion', 'En camino', 'Entregado'];
+const ORDER_STATUSES = ['En preparacion', 'Listo para recoger', 'Entregado'];
 
 function roomFor(orderId) {
   return `order:${orderId}`;
