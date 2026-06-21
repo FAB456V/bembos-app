@@ -49,7 +49,7 @@ function nextScan(_req, res) {
 
 async function getDashboard(_req, res, next) {
   try {
-    const orders = await Order.find({ modalidad: 'Recojo en tienda' })
+    const orders = await Order.find({})
       .sort({ createdAt: -1 })
       .limit(100);
 
