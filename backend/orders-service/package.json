@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node index.js",
-    "check": "node --check index.js && node --check models/Order.js && node --check controllers/ordersController.js && node --check routes/ordersRoutes.js && node --check middlewares/verifyToken.js && node --check middlewares/verifyServiceKey.js && node --check controllers/iotController.js && node --check middlewares/verifyDeviceKey.js",
+    "check": "node --check index.js && node --check models/Order.js && node --check controllers/ordersController.js && node --check routes/ordersRoutes.js && node --check middlewares/verifyToken.js && node --check middlewares/verifyServiceKey.js && node --check controllers/iotController.js && node --check controllers/scanQueueController.js && node --check services/scanQueue.js && node --check middlewares/verifyDeviceKey.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

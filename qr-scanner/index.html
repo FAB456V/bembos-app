@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bembos - Escáner QR</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root { color-scheme: light; font-family: Arial, sans-serif; }
+    body { background:#f5f5f5; margin:0; color:#1a1a1a; }
+    main { margin:auto; max-width:620px; padding:28px 16px; }
+    h1 { color:#e30613; margin-bottom:4px; }
+    .card { background:white; border-radius:16px; box-shadow:0 3px 14px #0002; padding:18px; }
+    label { display:block; font-size:12px; font-weight:800; margin:12px 0 5px; }
+    input { border:1px solid #bbb; border-radius:8px; box-sizing:border-box; padding:11px; width:100%; }
+    #reader { margin-top:18px; }
+    #status { border-radius:9px; font-weight:700; margin-top:15px; padding:12px; }
+    .idle { background:#eee; } .ok { background:#ddf6e5; color:#287a43; } .error { background:#fde8e9; color:#b00020; }
+    code { word-break:break-all; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>BEMBOS</h1>
+  <p>Escáner del kiosco de recojo</p>
+  <section class="card">
+    <label for="apiUrl">API Gateway</label>
+    <input id="apiUrl" value="https://triumphant-benevolence-production-124d.up.railway.app">
+    <label for="deviceKey">IOT_DEVICE_API_KEY</label>
+    <input id="deviceKey" type="password" placeholder="Pega la misma clave usada en secrets.h">
+    <div id="reader"></div>
+    <div id="status" class="idle">Esperando un QR...</div>
+  </section>
+</main>
+<script>
+  const statusBox = document.getElementById('status');
+  let lastPayload = '';
+  let lastSentAt = 0;
+
+  function setStatus(message, type) {
+    statusBox.className = type;
+    statusBox.innerHTML = message;
+  }
+
+  async function sendQr(decodedText) {
+    const qrPayload = decodedText.trim();
+    const now = Date.now();
+
+    if (!qrPayload.startsWith('BEMBOS_ORDER:')) {
+      setStatus('El QR no pertenece a un pedido Bembos.', 'error');
+      return;
+    }
+
+    if (qrPayload === lastPayload && now - lastSentAt < 5000) return;
+    lastPayload = qrPayload;
+    lastSentAt = now;
+
+    const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+    const deviceKey = document.getElementById('deviceKey').value.trim();
+
+    if (!deviceKey) {
+      setStatus('Primero ingresa IOT_DEVICE_API_KEY.', 'error');
+      return;
+    }
+
+    setStatus('Enviando QR al ESP32...', 'idle');
+
+    try {
+      const response = await fetch(apiUrl + '/iot/scans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Device-Key': deviceKey,
+        },
+        body: JSON.stringify({ qrPayload }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) throw new Error(data.message || 'HTTP ' + response.status);
+      setStatus('QR enviado al kiosco.<br><code>' + qrPayload + '</code>', 'ok');
+    } catch (error) {
+      setStatus('No se pudo enviar: ' + error.message, 'error');
+    }
+  }
+
+  const scanner = new Html5QrcodeScanner('reader', {
+    fps: 10,
+    qrbox: { width: 250, height: 250 },
+    rememberLastUsedCamera: true,
+    supportedScanTypes: [
+      Html5QrcodeScanType.SCAN_TYPE_CAMERA,
+      Html5QrcodeScanType.SCAN_TYPE_FILE,
+    ],
+  }, false);
+
+  scanner.render(sendQr, () => {});
+</script>
+</body>
+</html>
