@@ -3,20 +3,38 @@
     "name": "Bembos App",
     "slug": "bembos-app",
     "version": "1.0.0",
+    "icon": "./app/assents/Bembos.png",
     "scheme": "bembos",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "android": {
-      "package": "com.bembos.optimizationapp"
+      "package": "com.bembos.optimizationapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./app/assents/Bembos.png",
+        "backgroundColor": "#E31B23"
+      }
     },
     "ios": {
-      "bundleIdentifier": "com.bembos.optimizationapp"
+      "bundleIdentifier": "com.bembos.optimizationapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d3aea359-714c-45ec-88da-3375a21febd0"
+      }
+    },
+    "owner": "fab456"
   }
 }

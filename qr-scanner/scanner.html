@@ -1,0 +1,16 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Lector QR Bembos</title><link rel="stylesheet" href="/styles.css"><script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script></head><body>
+<header><strong>BEMBOS</strong><nav><a href="/">Inicio</a><a href="/dashboard">Dashboard</a></nav></header>
+<main><section class="card" style="max-width:620px;margin:auto"><h1>Lector QR</h1><label>IOT_DEVICE_API_KEY</label><input id="key" type="password" placeholder="La misma clave de secrets.h"><div id="reader"></div><div id="status" class="status idle">Configura la clave y escanea un QR.</div><button id="again" class="full" hidden>Leer otro QR</button></section>
+<section id="receipt" class="card receipt"><h2>Pedido entregado</h2><div id="receiptDetail"></div></section></main>
+<script>
+const API='https://triumphant-benevolence-production-124d.up.railway.app',key=document.getElementById('key'),statusBox=document.getElementById('status'),again=document.getElementById('again');let scanner,locked=false,currentId=null;
+key.value=localStorage.getItem('bembosDeviceKey')||'';key.oninput=()=>localStorage.setItem('bembosDeviceKey',key.value.trim());
+const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function status(m,t='idle'){statusBox.className='status '+t;statusBox.innerHTML=m}
+function start(){locked=false;document.getElementById('reader').innerHTML='';scanner=new Html5QrcodeScanner('reader',{fps:10,qrbox:{width:250,height:250},rememberLastUsedCamera:true,supportedScanTypes:[Html5QrcodeScanType.SCAN_TYPE_CAMERA,Html5QrcodeScanType.SCAN_TYPE_FILE]},false);scanner.render(read,()=>{})}
+async function stop(){if(scanner)try{await scanner.clear()}catch(e){}scanner=null}
+async function read(text){if(locked)return;locked=true;await stop();again.hidden=false;if(!key.value.trim())return status('Ingresa la clave y pulsa Leer otro QR.','error');status('Enviando pedido a Wokwi...');try{const r=await fetch(API+'/iot/scans',{method:'POST',headers:{'Content-Type':'application/json','X-Device-Key':key.value.trim()},body:JSON.stringify({qrPayload:text.trim()})}),d=await r.json();if(!r.ok)throw Error(d.message);currentId=d.order.id;status('Pedido <b>#'+esc(d.order.numeroPedido)+'</b> enviado. Esperando despacho...','ok')}catch(e){status('No se pudo procesar: '+esc(e.message),'error')}}
+again.onclick=async()=>{again.hidden=true;currentId=null;status('Esperando un QR...');await stop();start()};
+async function watch(){if(!key.value.trim()||!currentId)return;try{const r=await fetch(API+'/iot/dashboard',{headers:{'X-Device-Key':key.value.trim()}}),d=await r.json(),o=d.delivered.find(x=>x.id===currentId);if(!o)return;currentId=null;status('Pedido <b>#'+esc(o.numeroPedido)+'</b> despachado.','ok');document.getElementById('receiptDetail').innerHTML='<b>Pedido #'+esc(o.numeroPedido)+'</b><p>'+o.productos.map(p=>esc(p.cantidad+' x '+p.nombre)).join('<br>')+'</p><p>'+esc(o.tiendaRecojo)+' · S/ '+Number(o.total).toFixed(2)+'</p>';document.getElementById('receipt').classList.add('visible')}catch(e){}}
+start();setInterval(watch,2000);
+</script></body></html>

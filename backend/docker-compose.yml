@@ -41,6 +41,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       SERVICE_API_KEY: ${SERVICE_API_KEY}
       IOT_DEVICE_API_KEY: ${IOT_DEVICE_API_KEY}
+      NOTIFICATION_SERVICE_URL: http://notification-service:3004
     networks:
       - bembos-network
     restart: unless-stopped

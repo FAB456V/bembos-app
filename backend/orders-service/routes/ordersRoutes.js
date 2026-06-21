@@ -9,12 +9,13 @@ const verifyDeviceKey = require('../middlewares/verifyDeviceKey');
 const verifyServiceKey = require('../middlewares/verifyServiceKey');
 const verifyToken = require('../middlewares/verifyToken');
 const { confirmPickup, scanOrder } = require('../controllers/iotController');
-const { getDashboard, nextScan, submitScan } = require('../controllers/scanQueueController');
+const { getDashboard, markReady, nextScan, submitScan } = require('../controllers/scanQueueController');
 
 const router = express.Router();
 
 router.post('/iot/scans', verifyDeviceKey, submitScan);
 router.get('/iot/dashboard', verifyDeviceKey, getDashboard);
+router.post('/iot/orders/:id/ready', verifyDeviceKey, markReady);
 router.get('/iot/scans/next', verifyDeviceKey, nextScan);
 router.post('/iot/orders/scan', verifyDeviceKey, scanOrder);
 router.post('/iot/orders/:id/pickup-confirmed', verifyDeviceKey, confirmPickup);

@@ -12,6 +12,9 @@ JWT_SECRET=replace-with-the-same-long-random-jwt-secret
 SERVICE_API_KEY=replace-with-the-same-long-random-service-key
 IOT_DEVICE_API_KEY=replace-with-a-long-random-device-key
 
+# orders-service notification target
+NOTIFICATION_SERVICE_URL=https://notification-service-production.up.railway.app
+
 # notification-service (Root Directory: backend/notification-service)
 MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bembos_notifications
 SERVICE_API_KEY=replace-with-the-same-long-random-service-key

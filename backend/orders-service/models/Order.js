@@ -40,6 +40,7 @@ const orderSchema = new mongoose.Schema(
     },
     deliveryId: { type: String, trim: true },
     tiempoEstimado: { type: Number, min: 0 },
+    expoPushToken: { type: String, trim: true, select: false },
   },
   { timestamps: true }
 );

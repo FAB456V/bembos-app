@@ -20,7 +20,7 @@ function orderResponse(order) {
 
 async function createOrder(req, res, next) {
   try {
-    const { productos, tiendaRecojo } = req.body || {};
+    const { productos, tiendaRecojo, expoPushToken } = req.body || {};
 
     if (!Array.isArray(productos) || productos.length === 0 || !tiendaRecojo?.trim()) {
       return res.status(400).json({
@@ -53,6 +53,7 @@ async function createOrder(req, res, next) {
       modalidad: 'Recojo en tienda',
       tiendaRecojo: tiendaRecojo.trim(),
       total,
+      expoPushToken: typeof expoPushToken === "string" ? expoPushToken.trim() : undefined,
     });
 
     const orderWithQr = await Order.findById(order._id).select('+qrToken');
