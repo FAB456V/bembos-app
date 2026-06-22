@@ -11,7 +11,7 @@ const PICKUP_STORES = [
 ];
 
 export default function CartScreen() {
-
+  const { changeQuantity, clearCart, items, total } = useCart();
   const { expoPushToken } = usePushToken();
   const [selectedStore, setSelectedStore] = useState(PICKUP_STORES[0]);
   const [error, setError] = useState('');
@@ -29,6 +29,7 @@ export default function CartScreen() {
     try {
       const order = await createOrder({
         productos: items,
+        tiendaRecojo: selectedStore.name,
         expoPushToken,
       });
       clearCart();
