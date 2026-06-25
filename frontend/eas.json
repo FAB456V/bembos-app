@@ -5,6 +5,10 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://triumphant-benevolence-production-124d.up.railway.app",
+        "EXPO_PUBLIC_TRACKING_URL": "https://triumphant-benevolence-production-124d.up.railway.app"
+      },
       "android": {
         "buildType": "apk"
       }

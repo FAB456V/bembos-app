@@ -1,4 +1,5 @@
 #include <ArduinoJson.h>
+#include <DHTesp.h>
 #include <ESP32Servo.h>
 #include <HTTPClient.h>
 #include <LiquidCrystal_I2C.h>
@@ -9,13 +10,16 @@
 #include <Wire.h>
 #include "secrets.h"
 
-constexpr int SS_PIN=5, RST_PIN=27, GREEN_LED_PIN=2, RED_LED_PIN=4, BUZZER_PIN=15, SERVO_PIN=13;
+constexpr int SS_PIN=5, RST_PIN=27, GREEN_LED_PIN=2, RED_LED_PIN=4, BUZZER_PIN=15, SERVO_PIN=13, DHT_PIN=14;
 constexpr unsigned long OPEN_TIME_MS=5000;
 MFRC522 rfid(SS_PIN,RST_PIN);
 LiquidCrystal_I2C lcd(0x27,16,2);
 Servo gate;
+DHTesp dht;
 unsigned long lastScanPollAt=0;
 constexpr unsigned long SCAN_POLL_INTERVAL_MS=1500;
+constexpr float MIN_BOX_TEMP_C=35.0;
+constexpr float MAX_BOX_TEMP_C=60.0;
 
 void showMessage(const String &a,const String &b=""){
   lcd.clear(); lcd.setCursor(0,0); lcd.print(a.substring(0,16));
@@ -67,6 +71,26 @@ bool confirmPickup(const String &id){
   Serial.printf("Confirmacion HTTP %d: %s\n",code,response.c_str());
   return code==HTTP_CODE_OK;
 }
+bool readBoxClimate(float &temperature,float &humidity){
+  TempAndHumidity data=dht.getTempAndHumidity();
+  if(isnan(data.temperature)||isnan(data.humidity))return false;
+  temperature=data.temperature;humidity=data.humidity;return true;
+}
+bool isBoxTemperatureOk(float temperature){
+  return temperature>=MIN_BOX_TEMP_C&&temperature<=MAX_BOX_TEMP_C;
+}
+void showBoxClimate(){
+  float temperature,humidity;
+  if(!readBoxClimate(temperature,humidity)){
+    setLeds(false,true);showMessage("Sensor temp","sin lectura");beep(2,100);delay(1200);return;
+  }
+  bool ok=isBoxTemperatureOk(temperature);
+  Serial.printf("Caja: %.1f C / %.0f%% HR - %s\n",temperature,humidity,ok?"temp OK":"revisar temp");
+  setLeds(ok,!ok);
+  showMessage("Caja "+String(temperature,1)+" C",ok?"Temp OK":"Revisar temp");
+  if(!ok)beep(2,120);
+  delay(1500);
+}
 void openGate(){gate.write(90);delay(OPEN_TIME_MS);gate.write(0);}
 String fetchQueuedQr(){
   WiFiClientSecure client;client.setInsecure();HTTPClient http;
@@ -84,10 +108,12 @@ void setup(){
   Serial.begin(115200);Serial.setTimeout(250);
   pinMode(GREEN_LED_PIN,OUTPUT);pinMode(RED_LED_PIN,OUTPUT);pinMode(BUZZER_PIN,OUTPUT);setLeds(false,false);
   gate.setPeriodHertz(50);gate.attach(SERVO_PIN,500,2400);gate.write(0);
+  dht.setup(DHT_PIN,DHTesp::DHT22);
   SPI.begin();rfid.PCD_Init();lcd.init();lcd.backlight();showMessage("Conectando","WiFi...");
   WiFi.begin("Wokwi-GUEST","",6);
   while(WiFi.status()!=WL_CONNECTED){delay(250);Serial.print('.');}
   Serial.println("\nWiFi conectado");
+  showBoxClimate();
   Serial.println("Esperando QR desde el escaner web...");
   showMessage("Esperando QR","Escaner web");
 }
@@ -101,6 +127,7 @@ void processQr(String qrPayload){
   String id,number,store;int result=scanOrder(qrPayload,id,number,store);
   if(result==200){
     showMessage("Pedido #"+number,store);setLeds(true,false);beep(1,150);delay(1500);
+    showBoxClimate();
     if(confirmPickup(id)){
       Serial.println("*** PEDIDO DESPACHADO ***");
       showMessage("Abriendo caja","Retire pedido");openGate();showMessage("Pedido","despachado!");

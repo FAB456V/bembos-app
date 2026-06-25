@@ -1,31 +1,37 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { PRODUCT_IMAGES } from '../constants/productImages';
 
 export default function ProductCard({ onAdd, product }) {
   return (
     <View style={styles.card}>
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageText}>B</Text>
-      </View>
+      <Image source={PRODUCT_IMAGES[product.productId]} style={styles.image} />
       <View style={styles.details}>
         <Text style={styles.name}>{product.nombre}</Text>
         <Text style={styles.description}>{product.descripcion}</Text>
-        <Text style={styles.price}>S/ {product.precioUnitario.toFixed(2)}</Text>
-        <Pressable onPress={() => onAdd(product)} style={styles.button}>
-          <Text style={styles.buttonText}>Agregar al carrito</Text>
-        </Pressable>
+        <View style={styles.footer}>
+          <Text style={styles.price}>S/ {product.precioUnitario.toFixed(2)}</Text>
+          <Pressable
+            accessibilityLabel={`Agregar ${product.nombre} al carrito`}
+            onPress={() => onAdd(product)}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+          >
+            <Text style={styles.buttonText}>+</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#ffffff', borderRadius: 12, elevation: 2, flexDirection: 'row', marginBottom: 14, padding: 14, shadowColor: '#000000', shadowOpacity: 0.08, shadowRadius: 6 },
-  imagePlaceholder: { alignItems: 'center', backgroundColor: '#f4c542', borderRadius: 10, height: 82, justifyContent: 'center', marginRight: 14, width: 82 },
-  imageText: { color: '#d71920', fontSize: 40, fontWeight: '900' },
-  details: { flex: 1 },
-  name: { color: '#222222', fontSize: 17, fontWeight: '700' },
-  description: { color: '#666666', fontSize: 13, marginTop: 3 },
-  price: { color: '#d71920', fontSize: 16, fontWeight: '800', marginTop: 8 },
-  button: { alignSelf: 'flex-start', backgroundColor: '#d71920', borderRadius: 6, marginTop: 9, paddingHorizontal: 12, paddingVertical: 8 },
-  buttonText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 12, elevation: 3, flexDirection: 'row', marginBottom: 13, padding: 12, shadowColor: '#000000', shadowOffset: { height: 2, width: 0 }, shadowOpacity: 0.1, shadowRadius: 6 },
+  image: { backgroundColor: '#FFF7D6', borderRadius: 12, height: 92, marginRight: 13, resizeMode: 'cover', width: 92 },
+  details: { flex: 1, justifyContent: 'space-between' },
+  name: { color: '#1A1A1A', fontSize: 16, fontWeight: '800' },
+  description: { color: '#666666', fontSize: 12, lineHeight: 17, marginTop: 3 },
+  footer: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: 7 },
+  price: { color: '#1300D0', fontSize: 17, fontWeight: '900' },
+  button: { alignItems: 'center', backgroundColor: '#FFC20E', borderRadius: 18, height: 36, justifyContent: 'center', width: 36 },
+  buttonPressed: { opacity: 0.72 },
+  buttonText: { color: '#1A1A1A', fontSize: 25, fontWeight: '900', lineHeight: 28 },
 });

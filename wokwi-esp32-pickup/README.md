@@ -1,6 +1,6 @@
 # ESP32 - Kiosco de recojo Bembos
 
-Simulacion Wokwi con ESP32, RFID RC522, LCD I2C, LEDs, buzzer y servo.
+Simulacion Wokwi con ESP32, RFID RC522, LCD I2C, LEDs, buzzer, servo y sensor DHT22 para monitorear la temperatura de la caja de recojo.
 
 La pagina `qr-scanner` lee el QR con la camara o desde una imagen y lo envia a Railway. El ESP32 consulta automaticamente la cola cada 1.5 segundos. El Serial Monitor se conserva como entrada alternativa.
 
@@ -12,6 +12,7 @@ La pagina `qr-scanner` lee el QR con la camara o desde una imagen y lo envia a R
 4. Cambia el pedido a `Listo para recoger` antes de probar el kiosco.
 5. Despliega la version actualizada de `orders-service` y abre esta carpeta en Wokwi.
 6. Inicia la simulacion y escanea el QR con la pagina web; Wokwi lo recibira automaticamente.
+7. Ajusta el DHT22 en Wokwi si quieres simular otra temperatura de caja. El rango aceptado en el sketch es de 35 C a 60 C.
 
 ## Respuestas
 

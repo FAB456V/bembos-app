@@ -31,7 +31,7 @@ export function useSocket(orderId) {
     });
 
     socket.on('connect_error', (error) => {
-      setConnectionError(error.message || 'No se pudo conectar al tracking.');
+      setConnectionError(error.message || 'No se pudo conectar al estado del pedido.');
       setIsConnected(false);
     });
 

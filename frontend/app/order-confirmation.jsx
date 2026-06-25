@@ -8,6 +8,7 @@ import { getOrder } from '../services/ordersService';
 export default function OrderConfirmationScreen() {
   const params = useLocalSearchParams();
   const orderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
+  const openedFromOrders = params.from === 'orders';
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
 
@@ -48,7 +49,7 @@ export default function OrderConfirmationScreen() {
       <View style={styles.successIcon}>
         <Text style={styles.successIconText}>✓</Text>
       </View>
-      <Text style={styles.title}>Pedido confirmado</Text>
+      <Text style={styles.title}>{openedFromOrders ? 'QR del pedido' : 'Pedido confirmado'}</Text>
       <Text style={styles.subtitle}>Presenta este QR en el mostrador para validar tu recojo.</Text>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -67,8 +68,6 @@ export default function OrderConfirmationScreen() {
               />
             </View>
             <Text style={styles.qrHelp}>El codigo identifica este pedido de forma unica.</Text>
-            <Text style={styles.qrPayloadLabel}>TEXTO PARA WOKWI</Text>
-            <Text selectable style={styles.qrPayload}>{order.qrPayload}</Text>
           </View>
 
           <View style={styles.summaryCard}>
@@ -122,8 +121,6 @@ const styles = StyleSheet.create({
   orderLabel: { color: '#1300D0', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   qrContainer: { borderColor: '#FFC20E', borderRadius: 14, borderWidth: 3, marginTop: 14, padding: 8 },
   qrHelp: { color: '#777777', fontSize: 12, marginTop: 12, textAlign: 'center' },
-  qrPayloadLabel: { color: "#888888", fontSize: 10, fontWeight: "900", letterSpacing: 0.7, marginTop: 14 },
-  qrPayload: { backgroundColor: "#F2F2F2", borderRadius: 8, color: "#1A1A1A", fontFamily: "monospace", fontSize: 11, lineHeight: 16, marginTop: 6, padding: 10, width: "100%" },
   summaryCard: { backgroundColor: '#FFFFFF', borderRadius: 16, marginTop: 14, padding: 16, width: '100%' },
   summaryHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   summaryTitle: { color: '#1A1A1A', fontSize: 18, fontWeight: '900' },
